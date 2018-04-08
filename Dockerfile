@@ -18,40 +18,39 @@ RUN apt-get update && apt-get install -y curl \
     python \
     python3 \
     python-dev \
-    python3-dev
+    python3-dev \
+    python-mecab \
+    python-six
 
 # python
 RUN curl -L -o get-pip.py 'https://bootstrap.pypa.io/get-pip.py' \
     && python get-pip.py \
-    && python3 get-pip.py
-RUN python3 -m pip -V
-RUN pip install mecab-python3 \
-    && pip install six \
-    && apt-get install -y python-mecab
+    && python3 get-pip.py \
+    && pip install mecab-python3 \
+    && pip install six
 
 # cabocha
 RUN curl -L -o CRF++-0.58.tar.gz 'https://drive.google.com/uc?export=download&id=0B4y35FiV1wh7QVR6VXJ5dWExSTQ' \
-    && tar zxf CRF++-0.58.tar.gz
-WORKDIR CRF++-0.58
-RUN ./configure \
+    && tar zxf CRF++-0.58.tar.gz \
+    && cd CRF++-0.58 \
+    && ./configure \
     && make \
     && make install \
-    && ldconfig
-WORKDIR ../
-RUN curl -c  cabocha-0.69.tar.bz2 -s -L 'https://drive.google.com/uc?export=download&id=0B4y35FiV1wh7SDd1Q1dUQkZQaUU' |grep confirm |  sed -e "s/^.*confirm=\(.*\)&amp;id=.*$/\1/" | xargs -I{} \
+    && ldconfig \
+    && cd ../ \
+    && curl -c  cabocha-0.69.tar.bz2 -s -L 'https://drive.google.com/uc?export=download&id=0B4y35FiV1wh7SDd1Q1dUQkZQaUU' |grep confirm |  sed -e "s/^.*confirm=\(.*\)&amp;id=.*$/\1/" | xargs -I{} \
     curl -b  cabocha-0.69.tar.bz2 -L -o cabocha-0.69.tar.bz2 'https://drive.google.com/uc?confirm={}&export=download&id=0B4y35FiV1wh7SDd1Q1dUQkZQaUU' \
-    && tar xjf cabocha-0.69.tar.bz2
-WORKDIR cabocha-0.69
-RUN ./configure --with-mecab-config='which mecab-config' --with-charset=UTF8 \
+    && tar xjf cabocha-0.69.tar.bz2 \
+    && cd cabocha-0.69 \
+    && ./configure --with-mecab-config='which mecab-config' --with-charset=UTF8 \
     && make \
     && make install \
-    && ldconfig
-RUN cd python \
+    && ldconfig \
+    && cd python \
     && python setup.py install \
     && python3 setup.py install
 
 # juman++
-WORKDIR ../
 RUN apt-get install -y libboost-all-dev \
     && curl -L -o jumanpp-1.02.tar.xz 'http://lotus.kuee.kyoto-u.ac.jp/nl-resource/jumanpp/jumanpp-1.02.tar.xz' \
     && tar xJvf jumanpp-1.02.tar.xz \
@@ -67,8 +66,8 @@ RUN apt-get install -y libboost-all-dev \
 
 # other
 WORKDIR ../
-RUN rm -rf work
-RUN apt-get install -y language-pack-ja-base language-pack-ja \
+RUN rm -rf work \
+    && apt-get install -y language-pack-ja-base language-pack-ja \
     && export LANG=ja_JP.UTF-8
 ENV LANG=ja_JP.UTF-8
 ADD sample/ home/
