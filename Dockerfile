@@ -2,12 +2,13 @@ FROM ubuntu:16.04
 
 WORKDIR work
 
-# mecab
+# lib & mecab
 RUN apt-get update && apt-get install -y curl \
     make \
     gcc \
     build-essential \
     git \
+    zip \
     libmecab2 \
     libmecab-dev \
     mecab \
@@ -16,7 +17,17 @@ RUN apt-get update && apt-get install -y curl \
     mecab-utils \
     python \
     python3 \
-    python-dev
+    python-dev \
+    python3-dev
+
+# python
+RUN curl -L -o get-pip.py 'https://bootstrap.pypa.io/get-pip.py' \
+    && python get-pip.py \
+    && python3 get-pip.py
+RUN python3 -m pip -V
+RUN pip install mecab-python3 \
+    && pip install six \
+    && apt-get install -y python-mecab
 
 # cabocha
 RUN curl -L -o CRF++-0.58.tar.gz 'https://drive.google.com/uc?export=download&id=0B4y35FiV1wh7QVR6VXJ5dWExSTQ' \
@@ -27,32 +38,37 @@ RUN ./configure \
     && make install \
     && ldconfig
 WORKDIR ../
-RUN curl -c  cabocha-0.69.tar.bz2 -s -L "https://drive.google.com/uc?export=download&id=0B4y35FiV1wh7SDd1Q1dUQkZQaUU" |grep confirm |  sed -e "s/^.*confirm=\(.*\)&amp;id=.*$/\1/" | xargs -I{} \
-    curl -b  cabocha-0.69.tar.bz2 -L -o cabocha-0.69.tar.bz2 "https://drive.google.com/uc?confirm={}&export=download&id=0B4y35FiV1wh7SDd1Q1dUQkZQaUU"
-RUN tar xjf cabocha-0.69.tar.bz2
+RUN curl -c  cabocha-0.69.tar.bz2 -s -L 'https://drive.google.com/uc?export=download&id=0B4y35FiV1wh7SDd1Q1dUQkZQaUU' |grep confirm |  sed -e "s/^.*confirm=\(.*\)&amp;id=.*$/\1/" | xargs -I{} \
+    curl -b  cabocha-0.69.tar.bz2 -L -o cabocha-0.69.tar.bz2 'https://drive.google.com/uc?confirm={}&export=download&id=0B4y35FiV1wh7SDd1Q1dUQkZQaUU' \
+    && tar xjf cabocha-0.69.tar.bz2
 WORKDIR cabocha-0.69
 RUN ./configure --with-mecab-config='which mecab-config' --with-charset=UTF8 \
     && make \
     && make install \
-    && ldconfig \
-    && cd python \
-    && python setup.py install
+    && ldconfig
+RUN cd python \
+    && python setup.py install \
+    && python3 setup.py install
 
 # juman++
 WORKDIR ../
-RUN apt-get install -y libboost-all-dev
-RUN curl -L -o jumanpp-1.02.tar.xz 'http://lotus.kuee.kyoto-u.ac.jp/nl-resource/jumanpp/jumanpp-1.02.tar.xz'
-RUN tar xJvf jumanpp-1.02.tar.xz \
+RUN apt-get install -y libboost-all-dev \
+    && curl -L -o jumanpp-1.02.tar.xz 'http://lotus.kuee.kyoto-u.ac.jp/nl-resource/jumanpp/jumanpp-1.02.tar.xz' \
+    && tar xJvf jumanpp-1.02.tar.xz \
     && cd jumanpp-1.02\
     && ./configure \
     && make \
-    && make install
+    && make install \
+    && curl -L -o pyknp-0.3.tar.gz 'http://nlp.ist.i.kyoto-u.ac.jp/nl-resource/knp/pyknp-0.3.tar.gz' \
+    && tar xvf pyknp-0.3.tar.gz \
+    && cd pyknp-0.3 \
+    && python setup.py install \
+    && python3 setup.py install
 
 # other
-RUN curl -L -o get-pip.py 'https://bootstrap.pypa.io/get-pip.py' \
-    && python get-pip.py \
-    && python3 get-pip.py
-RUN python3 -m pip -V
-RUN pip freeze
 WORKDIR ../
 RUN rm -rf work
+RUN apt-get install -y language-pack-ja-base language-pack-ja \
+    && export LANG=ja_JP.UTF-8
+ENV LANG=ja_JP.UTF-8
+ADD sample/ home/
