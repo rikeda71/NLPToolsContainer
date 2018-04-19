@@ -39,7 +39,7 @@ RUN curl -L -o CRF++-0.58.tar.gz 'https://drive.google.com/uc?export=download&id
     && python setup.py install \
     && python3 setup.py install \
     && cd ../../ \
-    && rm -rf *
+    && rm -rf CRF++-0.58* cabocha-0.69*
 
 # juman++
 RUN curl -L -o jumanpp-1.02.tar.xz 'http://lotus.kuee.kyoto-u.ac.jp/nl-resource/jumanpp/jumanpp-1.02.tar.xz' \
@@ -52,7 +52,7 @@ RUN curl -L -o jumanpp-1.02.tar.xz 'http://lotus.kuee.kyoto-u.ac.jp/nl-resource/
     && python setup.py install \
     && python3 setup.py install \
     && cd ../../ \
-    && rm -rf *
+    && rm -rf jumanpp-1.02*
 
 # other
 WORKDIR /home
