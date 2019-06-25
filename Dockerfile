@@ -1,17 +1,24 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 WORKDIR work
 
-# lib & mecab
-RUN apt-get update && apt-get install -y \
+# lib & mecab & neologd
+RUN apt update && apt install -y \
     curl \
     make \
     gcc build-essential \
-    libmecab2 libmecab-dev \
-    mecab mecab-ipadic mecab-ipadic-utf8 mecab-utils \
-    python python3 python-dev python3-dev python-mecab python-six \
+    libmecab-dev \
+    mecab mecab-ipadic-utf8 \
+    python3 python3-dev python-mecab python-six \
     libboost-all-dev \
     language-pack-ja-base language-pack-ja \
+    git \
+    xz-utils \
+    file \
+    && git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git \
+    && mkdir -p `mecab-config --dicdir` \
+    && ./mecab-ipadic-neologd/bin/install-mecab-ipadic-neologd -n -y \
+    && rm -r mecab-ipadic-neologd \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
